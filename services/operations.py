@@ -69,6 +69,7 @@ class Operations:
 
                 elif new_option == 4:
                     AddressBooks.print_system_registry()
+                    new_option = Operations.get_user_choice()
 
         except Exception:
             logging.exception("Error at contact_details")
@@ -159,4 +160,3 @@ class Operations:
             logging.exception("editor error")
 
 
-##

@@ -38,8 +38,9 @@ class AddressBooks:
         :return: boolean
         """
         try:
-            contact_list = AddressBooks.system_registry[book_name]
+            contact_list = AddressBooks.system_registry.get(book_name)
             for contact_obj in contact_list:
+                print(contact_obj)
                 if contact_obj.first_name == contact_object_to_add.first_name\
                         and contact_obj.last_name == contact_object_to_add.last_name:
                     print("This contact details already exists with same name")
@@ -58,7 +59,7 @@ class AddressBooks:
         """
         try:
             if book_name in self.system_registry.keys():
-                return self.system_registry[book_name]
+                return self.system_registry.get(book_name)
             else:
                 print("Doesn't Exist")
                 return
@@ -78,7 +79,7 @@ class AddressBooks:
         """
         try:
             if book_name in AddressBooks.system_registry.keys():
-                contact_list = AddressBooks.system_registry[book_name]
+                contact_list = AddressBooks.system_registry.get(book_name)
                 for item in contact_list:
                     if item.first_name == first_name and item.last_name == last_name:
                         return item
@@ -114,20 +115,19 @@ class AddressBooks:
         except Exception:
             logging.exception("Error occurred while adding contact list to system registry")
 
-    #@staticmethod
-    def print_system_registry(self):
+    @staticmethod
+    def print_system_registry():
         """
         Prints the system registry
         :return: nothing
         """
         try:
-            for key in AddressBooks.system_registry.keys():
-                print(key)
-                for obj in AddressBooks.system_registry[key]:
-                    print(obj)
+            for i in range(0, len(AddressBooks.system_registry.items())):
+                for key in AddressBooks.system_registry.keys():
+                    print(key)
+                    for obj in AddressBooks.system_registry.get(key):
+                        print(obj)
 
         except Exception:
             logging.exception("error while printing")
 
-
-##
