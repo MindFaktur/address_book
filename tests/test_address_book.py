@@ -1,5 +1,6 @@
 from unittest import TestCase
 from registry.address_book import AddressBooks
+from registry.contact_object_creator import Contacts
 
 
 class TestAddressBooks(TestCase):
@@ -19,8 +20,8 @@ class TestAddressBooks(TestCase):
                          "email": "Email -ID "
                          }
         book_name = "FirstBook"
-        contact_obj = AddressBooks(detail_object)
-        contact_obj.add_to_system(book_name, contact_obj)
+        contact_obj = Contacts(detail_object)
+        AddressBooks().add_to_system(book_name, contact_obj)
 
         assert len(AddressBooks.system_registry) > 0
 
@@ -87,8 +88,8 @@ class TestAddressBooks(TestCase):
                          "email": "Email -ID "
                          }
         book_name = "FirstBook"
-        contact_obj = AddressBooks(detail_object)
-        contact_obj.add_to_system(book_name, contact_obj)
+        contact_obj = Contacts(detail_object)
+        AddressBooks().add_to_system(book_name, contact_obj)
 
         detail_object1 = {"first_name": "First1",
                           "last_name": "Last1",
@@ -100,8 +101,8 @@ class TestAddressBooks(TestCase):
                           "email": "Email -ID1"
                           }
 
-        contact_obj1 = AddressBooks(detail_object1)
-        contact_obj1.add_to_list(book_name, contact_obj1)
-        list_of_contacts = contact_obj1.get_contact_list_using_book_name(book_name)
+        contact_obj1 = Contacts(detail_object1)
+        AddressBooks.add_to_list(book_name, contact_obj1)
+        list_of_contacts = AddressBooks().get_contact_list_using_book_name(book_name)
 
         assert len(list_of_contacts) > 0

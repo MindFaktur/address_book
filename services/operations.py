@@ -1,22 +1,31 @@
 import logging
 from registry.address_book import AddressBooks
+from regex.regex import RegexValidations
+from registry.contact_object_creator import Contacts
 
 
 class Operations:
-
-    logging.basicConfig(filename='address_book_log.log', filemode='a', format=' \n %(asctime)s - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename='log.log', filemode='a', format=' \n %(asctime)s - %(message)s',
+                        level=logging.DEBUG)
 
     @staticmethod
-    def get_input(field_name):
+    def get_input(field_name, regex):
         """
-        Get's user input and returns it
-        :param field_name: The user data field
-        :return: data field
+        Get's the user input and validates the input according to the given regex
+        :param field_name: The value to be entered
+        :param regex: regex pattern
+        :return: field value
         """
         try:
-            return input(f" Please enter {field_name}")
-
+            field_value = input(f" Please enter {field_name}")
+            if RegexValidations.regex_validator(field_value, regex):
+                return field_value
+            else:
+                logging.debug(msg=f" Invalid value entered at {field_name} = {field_value}")
+                print("Entered name is InValid, please enter again")
+                return Operations.get_input(field_name, regex)
         except Exception:
+            print("Enter proper value")
             logging.exception("Error while taking input in get_input")
 
     @staticmethod
@@ -27,7 +36,7 @@ class Operations:
         """
         try:
             option = int(input("Press \n 1) Add new Address Book \n 2) Edit Existing book "
-                               "\n 3) Add contact to existing address book \n 4) Print All \n 5) Quit "
+                               "\n 3) Add contact to existing address book \n 4) Print All \n 5) Search \n 6) Quit "
                                "\n choice =  "))
             return option
 
@@ -45,16 +54,16 @@ class Operations:
 
         new_option = Operations.get_user_choice()
         try:
-            while new_option != 5:
+            while new_option != 6:
                 if new_option == 1:
                     book_name = input("Please enter the new address book name \n ")
-                    new_object = Operations.contact_details()
-                    contact_object = AddressBooks(new_object)
-
-                    contact_object.add_to_system(book_name, contact_object)
-
-                    contact_object.print_system_registry()
-                    new_option = Operations.get_user_choice()
+                    if book_name not in AddressBooks.system_registry.keys():
+                        new_object = Operations.contact_details()
+                        contact_object = Contacts(new_object)
+                        AddressBooks().add_to_system(book_name, contact_object)
+                        new_option = Operations.get_user_choice()
+                    else:
+                        print(f"{book_name} already exists please choose edit option to edit it")
 
                 elif new_option == 2:
                     Operations.edit_menu()
@@ -62,17 +71,25 @@ class Operations:
 
                 elif new_option == 3:
                     book_name = input("Please enter the existing address book name to add contact \n ")
-                    new_object = Operations.contact_details()
-                    contact_object = AddressBooks(new_object)
-                    AddressBooks.add_to_list(book_name, contact_object)
-                    new_option = Operations.get_user_choice()
+                    if book_name in AddressBooks.system_registry.keys():
+                        new_object = Operations.contact_details()
+                        contact_object = Contacts(new_object)
+                        AddressBooks.add_to_list(book_name, contact_object)
+                        new_option = Operations.get_user_choice()
+                    else:
+                        print(f"{book_name} doesnt exist please create new book with the name")
 
                 elif new_option == 4:
                     AddressBooks.print_system_registry()
                     new_option = Operations.get_user_choice()
 
+                elif new_option == 5:
+                    choice = Operations.search_menu()
+                    Operations().search_dict(choice)
+                    new_option = Operations.get_user_choice()
+
         except Exception:
-            logging.exception("Error at contact_details")
+            logging.exception(f"Error at menu operations, choice is {new_option}")
 
     @staticmethod
     def contact_details():
@@ -81,14 +98,14 @@ class Operations:
         :return: dictionary object
         """
         try:
-            detail_object = {"first_name": Operations.get_input(" First Name "),
-                             "last_name": Operations.get_input(" Last Name "),
-                             "address": Operations.get_input(" Address "),
-                             "city": Operations.get_input(" City "),
-                             "state": Operations.get_input(" State "),
-                             "zip": Operations.get_input(" Zip code "),
-                             "phone_number": Operations.get_input(" Phone Number "),
-                             "email": Operations.get_input(" Email -ID ")
+            detail_object = {"first_name": Operations.get_input(" First Name ", RegexValidations.name_regex),
+                             "last_name": Operations.get_input(" Last Name ", RegexValidations.name_regex),
+                             "address": Operations.get_input(" Address ", RegexValidations.address_regex),
+                             "city": Operations.get_input(" City ", RegexValidations.city_regex),
+                             "state": Operations.get_input(" State ", RegexValidations.state_regex),
+                             "zip": Operations.get_input(" Zip code ", RegexValidations.zip_regex),
+                             "phone_number": Operations.get_input(" Phone Number ", RegexValidations.phone_regex),
+                             "email": Operations.get_input(" Email -ID ", RegexValidations.email_regex)
                              }
             return detail_object
 
@@ -102,25 +119,27 @@ class Operations:
         :return: nothing
         """
         try:
-            book_name = input("Please enter the new address book name ")
-            contact_first_name = input("Please enter the first name of contact to edit")
-            contact_last_name = input("Please enter the last name of contact to edit")
-            edit_field = int(input(" Press "
-                                   "\n 1) Edit First Name" +
-                                   "\n 2) Edit Last Name" +
-                                   "\n 3) Edit Address" +
-                                   "\n 4) Edit City" +
-                                   "\n 5) Edit State" +
-                                   "\n 6) Edit Zip code" +
-                                   "\n 7) Edit Phone_number" +
-                                   "\n 8) Edit Email" +
-                                   "\n "
-                                   ))
-            new_value = input("Please enter the new value: ")
-            contact_obj = AddressBooks.edit_contact(book_name, contact_first_name, contact_last_name)
+            book_name = input("Please enter the address book name ")
+            if book_name in AddressBooks.system_registry.keys():
+                contact_first_name = Operations.get_input(" First Name ", RegexValidations.name_regex)
+                contact_last_name = Operations.get_input(" Last Name ", RegexValidations.name_regex)
+                edit_field = int(input(" Press "
+                                       "\n 1) Edit First Name" +
+                                       "\n 2) Edit Last Name" +
+                                       "\n 3) Edit Address" +
+                                       "\n 4) Edit City" +
+                                       "\n 5) Edit State" +
+                                       "\n 6) Edit Zip code" +
+                                       "\n 7) Edit Phone_number" +
+                                       "\n 8) Edit Email" +
+                                       "\n "
+                                       ))
+                contact_obj = AddressBooks.edit_contact(book_name, contact_first_name, contact_last_name)
 
-            if contact_obj:
-                Operations.editor(contact_obj, edit_field, new_value)
+                if contact_obj:
+                    Operations.edit_values(contact_obj, edit_field)
+            else:
+                print(f"{book_name} doesnt exist please create new book with the name")
 
         except TypeError:
             print("Please enter values of data type as mentioned above")
@@ -128,35 +147,79 @@ class Operations:
             logging.exception(f"Error while taking input in edit_menu ")
 
     @staticmethod
-    def editor(contact_object, choice, new_val):
+    def edit_values(contact_obj, choice):
         """
-        All editing of contact details
-        :param contact_object: The person's contact data object
-        :param choice: The data field user wants to edit
-        :param new_val: The new value of the field
-        :return: nothing
+        Changes the existing object value to a new one
+        :param contact_obj: contact object whoose fields are to be changed
+        :param choice:what field is to be changed
+        :return:nothing
         """
         try:
-            if choice == 1:
-                contact_object.first_name = new_val
-            elif choice == 2:
-                contact_object.last_name = new_val
-            elif choice == 3:
-                contact_object.address = new_val
-            elif choice == 4:
-                contact_object.city = new_val
-            elif choice == 5:
-                contact_object.state = new_val
-            elif choice == 6:
-                contact_object.zip = new_val
-            elif choice == 7:
-                contact_object.phone_number = new_val
-            elif choice == 8:
-                contact_object.email = new_val
-            else:
-                print("Please choose from above")
-
+            editors = {1: contact_obj.set_first_name, 2: contact_obj.set_last_name, 3: contact_obj.set_address,
+                       4: contact_obj.set_city, 5: contact_obj.set_state, 6: contact_obj.set_zip, 7: contact_obj.set_phone,
+                       8: contact_obj.set_email}
+            editors.get(choice)()
         except Exception:
-            logging.exception("editor error")
+            logging.exception(msg="Error at edit values")
+
+    @staticmethod
+    def search_menu():
+        """
+        Shows the menu of search items
+        :return:
+        """
+        try:
+            search_option = int(input("Press \n 1) Search by first name  \n 2) Search by last name "
+                                      "\n 3) Search by city name \n 4) Search by state name \n 5) Search by zip code"
+                                      " \n 6) Search by phone number \n 7) Search by email \n choice =  "))
+            return search_option
+        except Exception:
+            print("Enter correct option")
+            logging.debug(msg=f"Error at search menu")
+            return Operations.search_menu()
+
+    def search_function(self, value_to_input, regex, choice):
+        """
+        searches paramter across all object's properties and print's names of object's having same value
+        :param value_to_input:
+        :param regex:
+        :param choice:
+        :return:
+        """
+        try:
+            list_of_contacts = AddressBooks.system_registry.values()
+            found_list = []
+            new_val = self.get_input(value_to_input, regex)
+            print(f"Same {value_to_input} : {new_val}")
+            for contact_list in list_of_contacts:
+                for contact in contact_list:
+                    editors = {1: contact.get_first_name, 2: contact.get_last_name,
+                               3: contact.get_city, 4: contact.get_state, 5: contact.get_zip,
+                               6: contact.get_phone, 7: contact.get_email}
+                    editors.get(choice + 1)()
+                    if editors.get(choice + 1)() == new_val:
+                        found_list.append(f"{contact.get_first_name()} {contact.get_last_name()}")
+            print(found_list)
+        except Exception:
+            logging.exception(msg="Error at search function")
+
+    def search_dict(self, choice):
+        """
+        list of paramters
+        :param choice:
+        :return:
+        """
+        choice = choice - 1
+        list_of_fields = [[" first name ", RegexValidations.name_regex], [" last name ", RegexValidations.name_regex],
+                          [" city ", RegexValidations.city_regex], [" state ", RegexValidations.state_regex],
+                          [" zip code ", RegexValidations.zip_regex], [" phone number ", RegexValidations.phone_regex],
+                          [" email ", RegexValidations.email_regex]
+                          ]
+        try:
+            self.search_function(list_of_fields[choice][0], list_of_fields[choice][1], choice)
+        except Exception:
+            print("Please enter from above options")
+            logging.exception(msg="error at search dict")
+
 
 

@@ -3,31 +3,8 @@ import logging
 
 class AddressBooks:
 
-    logging.basicConfig(filename='log.txt', filemode='a', format=' \n %(asctime)s - %(message)s', level=logging.DEBUG)
+    logging.basicConfig(filename='log.log', filemode='a', format=' \n %(asctime)s - %(message)s', level=logging.DEBUG)
     system_registry = {}
-
-    def __init__(self, contact_object):
-        self.first_name = contact_object["first_name"]
-        self.last_name = contact_object["last_name"]
-        self.address = contact_object["address"]
-        self.city = contact_object["city"]
-        self.state = contact_object["state"]
-        self.zip = contact_object["zip"]
-        self.phone_number = contact_object["phone_number"]
-        self.email = contact_object["email"]
-
-    def __str__(self):
-        return " " + self.first_name + " " + self.last_name + \
-                " { " + \
-                " First Name: " + self.first_name + \
-                ", Last Name: " + self.last_name + \
-                ", Address: " + self.address + \
-                ", City: " + self.city + \
-                ", State: " + self.state + \
-                ", Zip: " + self.zip + \
-                ", Phone Number: " + self.phone_number + \
-                ", Email: " + self.email + \
-                " } "
 
     @staticmethod
     def add_to_list(book_name, contact_object_to_add):
@@ -84,7 +61,7 @@ class AddressBooks:
                     if item.first_name == first_name and item.last_name == last_name:
                         return item
 
-                print("Given names Doesn't Exist")
+                print(f"Given {first_name} {last_name} Doesnt Exist")
                 return False
 
             else:
@@ -122,11 +99,10 @@ class AddressBooks:
         :return: nothing
         """
         try:
-            for i in range(0, len(AddressBooks.system_registry.items())):
-                for key in AddressBooks.system_registry.keys():
-                    print(key)
-                    for obj in AddressBooks.system_registry.get(key):
-                        print(obj)
+            for key in AddressBooks.system_registry.keys():
+                print(key)
+                for obj in AddressBooks.system_registry.get(key):
+                    print(obj)
 
         except Exception:
             logging.exception("error while printing")
